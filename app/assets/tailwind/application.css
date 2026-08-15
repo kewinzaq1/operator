@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Syne", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --color-paper: #d7e2d6;
+  --color-chalk: #f4f8f2;
+  --color-ink: #141c16;
+  --color-pine: #173225;
+  --color-moss: #3a5a44;
+  --color-pulse: #d24a0a;
+  --color-signal: #1f7a4d;
+  --color-rule: #b7c6b8;
+  --color-amber: #c98412;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgb(20 28 22 / 0.05) 1px, transparent 0);
+  background-size: 22px 22px;
+}
+
+.receipt {
+  background:
+    linear-gradient(180deg, transparent 0, transparent 8px, #f4f8f2 8px),
+    repeating-linear-gradient(
+      90deg,
+      #f4f8f2 0 12px,
+      transparent 12px 16px
+    );
+  background-color: #f4f8f2;
+}
+
+.receipt-dots {
+  background-image: radial-gradient(#173225 1.4px, transparent 1.5px);
+  background-size: 12px 8px;
+  background-repeat: repeat-x;
+}
+
+@keyframes stamp-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stamp-in {
+  animation: stamp-in 280ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamp-in { animation: none; }
+}

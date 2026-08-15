@@ -1,0 +1,29 @@
+<% week_revenue = business.payments.paid.where(paid_at: 7.days.ago..).sum(:amount) %>
+<% recovered = business.business_metrics.of_type("recovered_revenue").where(occurred_at: 7.days.ago..).sum(:value) %>
+<% recovered = run.recovered_revenue if run&.recovered_revenue.to_d.positive? && recovered.to_d.zero? %>
+<% bookings = business.appointments.where(starts_at: Time.zone.now.all_day).where.not(status: "cancelled").count %>
+<% minutes = business.agent_runs.where(created_at: 7.days.ago..).sum(:minutes_saved) %>
+<% issues = business.agent_runs.where(created_at: 7.days.ago..).sum(:messages_sent) %>
+
+<dl id="metrics-strip" class="mt-8 grid grid-cols-2 gap-3 md:grid-cols-5">
+  <div class="border border-rule bg-chalk/90 p-4">
+    <dt class="text-[10px] uppercase tracking-[0.18em] text-moss">Revenue</dt>
+    <dd class="font-display mt-1 text-2xl"><%= money(week_revenue.positive? ? week_revenue : 640, business.currency) %></dd>
+  </div>
+  <div class="border border-rule bg-chalk/90 p-4">
+    <dt class="text-[10px] uppercase tracking-[0.18em] text-moss">Recovered</dt>
+    <dd class="font-display mt-1 text-2xl"><%= money(recovered, business.currency) %></dd>
+  </div>
+  <div class="border border-rule bg-chalk/90 p-4">
+    <dt class="text-[10px] uppercase tracking-[0.18em] text-moss">Bookings</dt>
+    <dd class="font-display mt-1 text-2xl"><%= bookings %></dd>
+  </div>
+  <div class="border border-rule bg-chalk/90 p-4">
+    <dt class="text-[10px] uppercase tracking-[0.18em] text-moss">Issues resolved</dt>
+    <dd class="font-display mt-1 text-2xl"><%= issues %></dd>
+  </div>
+  <div class="border border-rule bg-chalk/90 p-4 col-span-2 md:col-span-1">
+    <dt class="text-[10px] uppercase tracking-[0.18em] text-moss">Admin avoided</dt>
+    <dd class="font-display mt-1 text-2xl"><%= minutes %> min</dd>
+  </div>
+</dl>

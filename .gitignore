@@ -1,0 +1,27 @@
+# See https://help.github.com/articles/ignoring-files for more about ignoring files.
+/.bundle
+/log/*
+/tmp/*
+!/log/.keep
+!/tmp/.keep
+/storage/*
+!/storage/.keep
+/tmp/storage/*
+!/tmp/storage/.keep
+/public/assets
+/app/assets/builds/*
+!/app/assets/builds/.keep
+/node_modules
+/config/master.key
+/config/*.key
+.env
+.env.*
+!.env.example
+/coverage
+*.log
+.DS_Store
+/vendor/bundle
+/tmp/pids/*
+!/tmp/pids/.keep
+*.swp
+*~

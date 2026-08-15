@@ -1,0 +1,9 @@
+<div id="today-impact" class="border-t border-dashed border-rule px-5 py-4">
+  <% if run&.completed? && run.summary.present? %>
+    <pre class="whitespace-pre-wrap font-mono text-xs leading-relaxed text-pine"><%= run.summary %></pre>
+  <% elsif run&.running? || run&.status == "pending" %>
+    <p class="font-mono text-xs text-moss">Working the morning list…</p>
+  <% else %>
+    <p class="font-mono text-xs text-moss">Impact prints here after a run.</p>
+  <% end %>
+</div>

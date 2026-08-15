@@ -1,0 +1,6 @@
+<%= turbo_stream.replace "operator-panel" do %>
+  <%= render "dashboard/operator_panel", run: @run, business: @business %>
+<% end %>
+<%= turbo_stream.replace "run-status" do %>
+  <%= render "dashboard/run_status", run: @run %>
+<% end %>

@@ -1,0 +1,14 @@
+<div id="run-status">
+  <% if run&.running? || run&.status == "pending" %>
+    <div class="text-right">
+      <p class="text-[10px] uppercase tracking-[0.18em] text-pulse">Agent job</p>
+      <p class="font-mono text-xs">status: <%= run.sandbox_status || "RUNNING" %></p>
+      <p class="font-mono text-xs">environment: <%= run.environment %></p>
+      <p class="font-mono text-xs">task: <%= run.sandbox_task %></p>
+    </div>
+  <% elsif run&.completed? %>
+    <p class="font-mono text-xs text-signal">run complete</p>
+  <% else %>
+    <p class="font-mono text-xs text-moss">idle</p>
+  <% end %>
+</div>

@@ -1,0 +1,148 @@
+<% content_for :title, "Operator — #{@business.name}" %>
+
+<div class="min-h-screen">
+  <header class="sticky top-0 z-20 border-b border-rule/80 bg-paper/90 backdrop-blur">
+    <div class="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-3 md:px-8">
+      <div class="flex items-baseline gap-3">
+        <%= link_to "Operator", root_path, class: "font-display text-lg" %>
+        <span class="hidden text-sm text-moss md:inline"><%= @business.name %> · <%= @business.timezone %></span>
+      </div>
+      <div class="flex items-center gap-3">
+        <% if demo_mode? %>
+          <span class="rounded-full border border-rule px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-moss">Demo</span>
+        <% end %>
+        <%= button_to "Reset demo", demo_reset_path, method: :post, class: "text-xs uppercase tracking-[0.16em] text-moss hover:text-ink", form: { data: { turbo_confirm: "Reset the studio to this morning's state?" } } %>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-[1400px] px-4 py-8 md:px-8">
+    <% if notice %>
+      <p class="mb-6 border border-signal/30 bg-chalk px-4 py-2 text-sm text-signal"><%= notice %></p>
+    <% end %>
+
+    <section class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="text-xs uppercase tracking-[0.28em] text-moss">Good morning, <%= owner_first_name %></p>
+        <h1 class="font-display mt-2 text-4xl leading-none md:text-5xl">Your business is under control.</h1>
+      </div>
+      <%= button_to agent_runs_path, method: :post, class: "group relative w-full max-w-sm rounded-[28px] bg-pulse px-8 py-5 text-left text-chalk shadow-[0_10px_0_#9a3206] transition hover:translate-y-[2px] hover:shadow-[0_8px_0_#9a3206] lg:w-auto", data: { turbo_submits_with: "Operator is working…" } do %>
+        <span class="text-[10px] uppercase tracking-[0.28em] text-chalk/70">One click</span>
+        <span class="font-display mt-1 block text-3xl leading-none">Run my business</span>
+      <% end %>
+    </section>
+
+    <%= render "dashboard/metrics", business: @business, run: @run %>
+
+    <div class="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(320px,420px)]">
+      <section class="border border-rule bg-chalk/80 p-5">
+        <div class="flex items-baseline justify-between">
+          <h2 class="text-xs uppercase tracking-[0.22em] text-moss">Today</h2>
+          <span class="font-mono text-xs text-moss"><%= Time.zone.now.strftime("%A %-d %b") %></span>
+        </div>
+        <ol class="mt-4 divide-y divide-rule">
+          <% @today_appointments.each do |appointment| %>
+            <li class="flex items-baseline justify-between gap-4 py-3">
+              <div>
+                <p class="font-mono text-sm"><%= appointment.starts_at.strftime("%H:%M") %>–<%= appointment.ends_at.strftime("%H:%M") %></p>
+                <p class="text-sm"><%= appointment.customer.name %> · <%= appointment.service.name %></p>
+              </div>
+              <span class="<%= appointment.cancelled? ? "text-pulse" : "text-moss" %> text-xs uppercase tracking-[0.16em]"><%= appointment_status_label(appointment) %></span>
+            </li>
+          <% end %>
+          <% if @today_appointments.empty? %>
+            <li class="py-6 text-sm text-moss">No sessions on the board yet.</li>
+          <% end %>
+        </ol>
+      </section>
+
+      <div id="operator-panel">
+        <%= render "dashboard/operator_panel", run: @run, business: @business %>
+      </div>
+    </div>
+
+    <div class="mt-6 grid gap-6 lg:grid-cols-2">
+      <section class="border border-rule bg-chalk/80 p-5">
+        <h2 class="text-xs uppercase tracking-[0.22em] text-moss">Money</h2>
+        <ul class="mt-4 space-y-3">
+          <% @unpaid.each do |payment| %>
+            <li class="flex items-baseline justify-between gap-3">
+              <span><%= payment.customer.name %> · <%= payment.status %></span>
+              <span class="font-mono"><%= money(payment.amount, payment.currency) %></span>
+            </li>
+          <% end %>
+          <% if @unpaid.empty? %>
+            <li class="text-sm text-moss">No open invoices.</li>
+          <% end %>
+        </ul>
+      </section>
+
+      <section class="border border-rule bg-chalk/80 p-5">
+        <h2 class="text-xs uppercase tracking-[0.22em] text-moss">Customers</h2>
+        <ul class="mt-4 space-y-3 text-sm">
+          <% @attention.inactive.first(4).each do |customer| %>
+            <li><span class="text-amber">Quiet.</span> <%= customer.name %> — last session <%= customer.days_since_visit %> days ago.</li>
+          <% end %>
+          <% @attention.unanswered_leads.each do |lead| %>
+            <li><span class="text-pulse">Lead.</span> <%= lead.customer&.name %> asked about <%= lead.intent %>.</li>
+          <% end %>
+          <% @attention.needing_human.each do |customer| %>
+            <li><span class="text-pulse">Needs a human.</span> <%= customer.name %>: <%= customer.open_question %></li>
+          <% end %>
+        </ul>
+      </section>
+    </div>
+
+    <div class="mt-6 grid gap-6 lg:grid-cols-2">
+      <section class="border border-rule bg-chalk/80 p-5">
+        <h2 class="text-xs uppercase tracking-[0.22em] text-moss">Automations</h2>
+        <ul class="mt-4 space-y-3 text-sm">
+          <% @automations.each do |action| %>
+            <li class="flex justify-between gap-3">
+              <span><%= action.action_type.humanize %><% if action.customer %> · <%= action.customer.name.split.first %><% end %></span>
+              <span class="font-mono text-xs text-moss"><%= action.created_at.strftime("%H:%M") %></span>
+            </li>
+          <% end %>
+          <% if @automations.empty? %>
+            <li class="text-sm text-moss">Press Run my business. This list fills in as work completes.</li>
+          <% end %>
+        </ul>
+      </section>
+
+      <section class="border border-rule bg-chalk/80 p-5">
+        <h2 class="text-xs uppercase tracking-[0.22em] text-moss">Human help</h2>
+        <% @escalations.each do |escalation| %>
+          <article class="mt-4 border border-rule bg-paper/50 p-4">
+            <p class="text-[10px] uppercase tracking-[0.2em] text-moss">AI decision · confidence <%= @run&.agent_actions&.find_by(action_type: "human_help")&.confidence || 62 %>%</p>
+            <p class="mt-2 text-sm"><%= escalation.task %></p>
+            <p class="mt-3 font-mono text-xs leading-relaxed text-pine">
+              → Terac<br>
+              → <%= escalation.expertise.to_s.truncate(48) %><br>
+              → quoted cost: <%= money(escalation.quoted_cost, "usd") %><br>
+              → <%= escalation.status %><br>
+              <% if escalation.result.present? %>→ result received<% end %>
+            </p>
+          </article>
+        <% end %>
+        <% if @escalations.empty? %>
+          <p class="mt-4 text-sm text-moss">When the operator is unsure, a verified human is hired here.</p>
+        <% end %>
+
+        <% if @approvals.any? %>
+          <div class="mt-6">
+            <h3 class="text-xs uppercase tracking-[0.18em] text-pulse">Needs you</h3>
+            <% @approvals.each do |approval| %>
+              <div class="mt-3 flex flex-wrap items-center justify-between gap-3 border border-pulse/40 p-3">
+                <p class="text-sm"><%= approval.description.to_s.split("\n").first %></p>
+                <div class="flex gap-2">
+                  <%= button_to "Approve", approval_path(approval, decision: "approve"), method: :patch, class: "rounded-full bg-pine px-3 py-1 text-xs text-chalk" %>
+                  <%= button_to "Reject", approval_path(approval, decision: "reject"), method: :patch, class: "rounded-full border border-rule px-3 py-1 text-xs" %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </section>
+    </div>
+  </main>
+</div>

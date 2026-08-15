@@ -1,0 +1,45 @@
+<% content_for :title, "Operator — you run the service" %>
+
+<div class="min-h-screen">
+  <header class="flex items-center justify-between px-6 py-5 md:px-10">
+    <div class="flex items-baseline gap-3">
+      <span class="font-display text-xl tracking-tight">Operator</span>
+      <span class="text-moss/80 text-sm">for one-person studios</span>
+    </div>
+    <div class="flex items-center gap-3 text-xs uppercase tracking-[0.18em] text-moss">
+      <% if demo_mode? %>
+        <span class="rounded-full border border-rule px-2 py-1">Demo</span>
+      <% end %>
+      Warsaw · <%= Time.zone.now.strftime("%H:%M") %>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-6 pb-24 md:px-10">
+    <p class="mt-8 text-sm uppercase tracking-[0.28em] text-moss">Anna Fitness · personal training · Mokotów</p>
+    <h1 class="font-display mt-6 max-w-4xl text-5xl leading-[0.95] tracking-tight md:text-7xl">
+      You run the service.<br>
+      Your operator runs the business.
+    </h1>
+    <p class="mt-8 max-w-xl text-lg leading-relaxed text-pine/80">
+      Appointments. Payments. Follow-ups. Cancellations. No-shows.
+      Handled automatically — so you can stay on the gym floor.
+    </p>
+    <div class="mt-10 flex flex-wrap items-center gap-4">
+      <%= link_to "Run a demo", dashboard_path, class: "inline-flex items-center rounded-full bg-pulse px-7 py-3.5 font-display text-lg text-chalk shadow-[0_8px_0_#9a3206] hover:translate-y-[1px] hover:shadow-[0_7px_0_#9a3206]" %>
+      <span class="text-sm text-moss">No login. Polish trainer studio. One click.</span>
+    </div>
+
+    <section class="mt-20 grid gap-4 md:grid-cols-3">
+      <% [
+        ["17:00 cancelled", "Operator finds who usually takes that hour and texts them."],
+        ["Unpaid 70 zł", "A reminder goes out. When they pay, the books update themselves."],
+        ["Injury question", "AI stops. A real physiotherapist is hired through Terac."]
+      ].each do |title, copy| %>
+        <article class="border border-rule bg-chalk/70 p-5">
+          <h2 class="font-display text-xl"><%= title %></h2>
+          <p class="mt-2 text-sm leading-relaxed text-pine/80"><%= copy %></p>
+        </article>
+      <% end %>
+    </section>
+  </main>
+</div>

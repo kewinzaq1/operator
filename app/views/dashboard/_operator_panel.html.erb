@@ -1,0 +1,28 @@
+  <% if run %>
+    <%= turbo_stream_from run.stream_name %>
+  <% end %>
+
+  <section class="receipt border border-pine/20 shadow-[6px_8px_0_rgba(23,50,37,0.12)]">
+    <div class="receipt-dots h-2 w-full opacity-40"></div>
+    <div class="flex items-start justify-between px-5 pt-4">
+      <div>
+        <h2 class="text-xs uppercase tracking-[0.22em] text-moss">Operator</h2>
+        <p class="font-display text-xl">Live activity</p>
+      </div>
+      <div>
+        <%= render "dashboard/run_status", run: run %>
+      </div>
+    </div>
+
+    <div id="operator-feed" class="mt-2 max-h-[32rem] space-y-3 overflow-y-auto px-5 py-4" data-controller="feed">
+      <% if run %>
+        <% run.agent_actions.chronological.each do |action| %>
+          <%= render "dashboard/action", action: action %>
+        <% end %>
+      <% else %>
+        <p class="font-mono text-sm text-moss">Waiting for the morning run.</p>
+      <% end %>
+    </div>
+
+    <%= render "dashboard/impact", run: run %>
+  </section>

@@ -1,0 +1,8 @@
+<div id="<%= dom_id(action) %>" class="stamp-in">
+  <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-moss">
+    <%= action.created_at.strftime("%H:%M:%S") %>
+    <% if action.confidence.present? && action.action_type == "human_help" %> · confidence <%= action.confidence %>%<% end %>
+    <% if action.blocked? %> · blocked<% end %>
+  </p>
+  <div class="mt-1 whitespace-pre-wrap font-mono text-[13px] leading-relaxed text-ink"><%= action.description %></div>
+</div>
