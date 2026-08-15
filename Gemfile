@@ -35,7 +35,7 @@ gem "bootsnap", require: false
 gem "thruster", require: false
 
 # Payments
-gem "stripe", "~> 15.0"
+gem "stripe", "~> 19.5"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
