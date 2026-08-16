@@ -8,6 +8,7 @@ class DashboardController < ApplicationController
     @unpaid = @business.payments.unpaid.order(:due_at)
     @attention = Tools::CustomerTool.new(@business)
     @escalations = @business.human_escalations.newest.limit(5)
+    @copy_research = @business.human_escalations.newest.find { |e| e.provenance.to_h["kind"] == "product_research" }
     @approvals = @business.approval_requests.pending
     @automations = AgentAction.where(business: @business, status: "completed").where.not(action_type: %w[business_check impact]).order(created_at: :desc).limit(8)
     @week_revenue = @business.payments.paid.where(paid_at: 7.days.ago..).sum(:amount)

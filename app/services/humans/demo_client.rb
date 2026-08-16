@@ -7,6 +7,8 @@ module Humans
       client and offer a lighter session this week.
     TEXT
 
+    COPY_RESULT = "B — shorter, names the time, easier to reply YES."
+
     def request_feasibility(task:, expertise:, context: nil)
       {
         "id" => "fr_demo_#{SecureRandom.hex(3)}",
@@ -28,10 +30,11 @@ module Humans
     end
 
     def create_opportunity(attrs)
+      @last_title = attrs[:title] || attrs["title"]
       {
         "id" => "opp_demo_#{SecureRandom.hex(3)}",
         "status" => "draft",
-        "title" => attrs[:title] || attrs["title"],
+        "title" => @last_title,
         "num_participants" => 1,
         "links" => { "launch" => "/opportunities/demo/launch", "submissions" => "/opportunities/demo/submissions" }
       }
@@ -50,7 +53,8 @@ module Humans
     end
 
     def get_submissions(_opportunity_id)
-      { "data" => [ { "id" => "sub_demo_pt", "status" => "approved", "result" => EXPERT_RESULT } ] }
+      result = @last_title.to_s.match?(/rebooking/i) ? COPY_RESULT : EXPERT_RESULT
+      { "data" => [ { "id" => "sub_demo_pt", "status" => "approved", "result" => result } ] }
     end
 
     def get_submission(id)

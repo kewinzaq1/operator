@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+# Record public/demo-film.html to a 2-minute MP4 with ElevenLabs voiceover.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+OUT_DIR="$ROOT/demo"
+VO_TXT="$OUT_DIR/voiceover.txt"
+VO_MP3="$OUT_DIR/voiceover.mp3"
+RAW_DIR="$OUT_DIR/raw"
+MP4="$OUT_DIR/operator-2min.mp4"
+PORT="${DEMO_FILM_PORT:-8765}"
+VOICE_ID="${ELEVENLABS_VOICE_ID:-JBFqnCBsd6RMkjVDRZzb}"
+
+mkdir -p "$OUT_DIR" "$RAW_DIR"
+
+if [[ -f "$ROOT/.env" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "$ROOT/.env"
+  set +a
+fi
+
+if [[ -z "${ELEVENLABS_API_KEY:-}" ]]; then
+  echo "Set ELEVENLABS_API_KEY in .env (gitignored)." >&2
+  exit 1
+fi
+
+echo "→ ElevenLabs voiceover"
+python3 - <<'PY' > /tmp/operator-eleven.json
+import json
+from pathlib import Path
+text = Path("/Users/kewin/operator/demo/voiceover.txt").read_text()
+print(json.dumps({
+    "text": text,
+    "model_id": "eleven_multilingual_v2",
+    "voice_settings": {
+        "stability": 0.42,
+        "similarity_boost": 0.78,
+        "style": 0.22,
+        "use_speaker_boost": True
+    }
+}))
+PY
+curl -sS -X POST "https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}?output_format=mp3_44100_128" \
+  -H "xi-api-key: ${ELEVENLABS_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -H "Accept: audio/mpeg" \
+  --data-binary @/tmp/operator-eleven.json \
+  -o "$VO_MP3"
+rm -f /tmp/operator-eleven.json
+ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "$VO_MP3"
+
+echo "→ serve film"
+python3 -m http.server "$PORT" --directory "$ROOT/public" >/tmp/operator-demo-film.log 2>&1 &
+SERVER_PID=$!
+trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+sleep 0.4
+export FILM_URL="http://127.0.0.1:${PORT}/demo-film.html"
+
+echo "→ record"
+cd "$OUT_DIR"
+if [[ ! -d node_modules/playwright ]]; then
+  npm init -y >/dev/null
+  npm install playwright@1.55.0
+  npx playwright install chromium
+fi
+
+node <<'NODE'
+const { chromium } = require("playwright");
+const path = require("path");
+const rawDir = path.join(process.cwd(), "raw");
+
+(async () => {
+  const browser = await chromium.launch({
+    headless: true,
+    args: ["--disable-dev-shm-usage"]
+  });
+  const context = await browser.newContext({
+    viewport: { width: 1920, height: 1080 },
+    deviceScaleFactor: 1,
+    recordVideo: { dir: rawDir, size: { width: 1920, height: 1080 } }
+  });
+  const page = await context.newPage();
+  await page.goto(process.env.FILM_URL, { waitUntil: "load" });
+  await page.evaluate(() => document.fonts.ready);
+  await page.evaluate(() => window.startFilm());
+  await page.waitForTimeout(120400);
+  await context.close();
+  await browser.close();
+})();
+NODE
+
+kill "$SERVER_PID" 2>/dev/null || true
+trap - EXIT
+
+WEBM="$(ls -t "$RAW_DIR"/*.webm | head -1)"
+echo "→ mux $WEBM + ElevenLabs → $MP4"
+ffmpeg -y -i "$WEBM" -i "$VO_MP3" \
+  -filter_complex "[1:a]aresample=44100,apad=whole_dur=120[a]" \
+  -map 0:v -map "[a]" \
+  -c:v libx264 -pix_fmt yuv420p -preset fast -crf 18 \
+  -c:a aac -b:a 192k \
+  -t 120 -movflags +faststart \
+  "$MP4"
+
+echo "→ done"
+ffprobe -hide_banner -show_entries format=duration -of default=nw=1:nk=1 "$MP4"
+ls -lh "$MP4"

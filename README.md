@@ -78,19 +78,22 @@ Used where they change the product, not as logos. Every adapter has a demo fallb
 
 | Sponsor | Role in the product | Demo fallback |
 | --- | --- | --- |
-| **Terac** | Human escalation: quote before spend, launch, poll, provenance | `Humans::DemoClient` |
+| **Terac** | Required: General Population copy test (before/after) plus expert escalation | `Humans::DemoClient` |
 | **Linq** | Customer messaging (iMessage / RCS / SMS) + inbound webhooks | `Messaging::DemoClient` + simulated replies |
-| **Stripe** | Session checkout and late-payment links; webhooks are source of truth | `Payments::DemoClient` |
+| **Stripe** | One personal Payment Link for every charge (hackathon guidebook) | `Payments::DemoClient` |
 | **Band** | Operations-room events for the agent | local log |
 | **Superserve** | Isolated sandbox for the daily run | in-process Rails job |
 | **Replay** | QA boundary (`Qa::ReplayClient`) | Rails system test |
 | **Whop** | Optional digital programs / memberships | demo catalog |
+| **Render** | Host the app; Workflows can own the daily run | `OperatorJob` locally |
 
 Terac talks to the current REST API (`https://terac.com/api/external/v2`) and MCP catalog:
 
 `terac_request_feasibility` → `POST /quotes` → poll until `RESPONDED`/`PRICED` → `POST /opportunities` → `POST /opportunities/:id/launch` → submissions.
 
-Pricing is never invented. Demo mode returns a deterministic $18 quote, under Anna’s €20 human-task cap.
+Hackathon studies target **General Population** (rebooking copy A vs B). Injury questions still hire a specialist. Pricing is never invented. Demo mode returns a deterministic $18 quote, under Anna’s €20 human-task cap.
+
+Hackathon credentials (Stripe personal account, Terac key, optional Render Workflows): **[`HACKATHON.md`](HACKATHON.md)** and `./bin/hackathon-setup`.
 
 ## 6. Running locally
 
@@ -130,6 +133,7 @@ DEMO_MODE=true
 OPERATOR_PACE=0.7
 APP_HOST=localhost:3000
 
+STRIPE_PAYMENT_LINK_URL=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 
@@ -148,6 +152,10 @@ WHOP_API_KEY=
 WHOP_COMPANY_ID=
 
 REPLAY_QA_API_KEY=
+
+RENDER_API_KEY=
+RENDER_TASK_SLUG=
+OPERATOR_JOB_TOKEN=
 ```
 
 Webhooks (when live providers are connected):
@@ -170,6 +178,8 @@ Render Blueprint: [`render.yaml`](render.yaml).
 
 In Render, set `RAILS_MASTER_KEY` from your local `config/master.key` and `APP_HOST` to the Render hostname. Optional worker: `bundle exec rake solid_queue:start` if you turn the Puma plugin off.
 
+**Best use of Render:** also create a Workflow service (Blueprints cannot). See [`workflows/README.md`](workflows/README.md).
+
 ## 10. Demo script
 
 This is the three-minute judge path.
@@ -181,7 +191,8 @@ This is the three-minute judge path.
    - business check
    - 17:00 cancellation → Marta contacted → she accepts → slot booked → Stripe payment link
    - Piotr’s overdue 70 zł reminder
-   - Kasia’s rebooking (usual interval 7 days, last session 13 days ago)
+   - Terac general-population copy test (before/after on the dashboard)
+   - Kasia’s rebooking using the winning text
    - unanswered lead
    - review requests
    - Wojtek’s injury question

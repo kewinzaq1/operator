@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Operator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 1920px; height: 1080px; overflow: hidden; background: #090807; }
+    .desk {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background:
+        repeating-linear-gradient(90deg, #14110f 0 28px, #100e0c 28px 30px),
+        #100e0c;
+    }
+    .tube {
+      position: absolute; top: 0; left: 0; right: 0; height: 8px;
+      background: linear-gradient(90deg, #2a2810, #e8ff6a 18%, #fff8c0 50%, #e8ff6a 82%, #2a2810);
+      opacity: 0.55;
+    }
+    .board {
+      position: absolute; left: 72px; top: 56px; width: 980px;
+      color: #f2ece3;
+    }
+    .led {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 15px;
+      color: #ff5a2a;
+      letter-spacing: 0.14em;
+    }
+    h1 {
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 800;
+      font-size: 118px;
+      line-height: 0.86;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      margin-top: 22px;
+    }
+    h1 em { font-style: normal; color: #ff5a2a; }
+    .sub {
+      margin-top: 22px;
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 26px;
+      line-height: 1.35;
+      color: #c8b8a4;
+      max-width: 820px;
+    }
+    .scene { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+    .scene.on { opacity: 1; }
+    .roll {
+      position: absolute;
+      right: 88px;
+      top: 40px;
+      width: 700px;
+      height: 1000px;
+      background: #f4d58a;
+      color: #1a1208;
+      box-shadow:
+        18px 28px 0 rgba(0,0,0,0.35),
+        0 0 0 1px #c9a85a;
+      padding: 28px 36px 40px;
+      overflow: hidden;
+    }
+    .roll:before {
+      content: "";
+      position: absolute; left: 0; right: 0; top: 0; height: 14px;
+      background: repeating-radial-gradient(circle at 8px 7px, #1a1208 0 2px, transparent 2.2px 16px);
+      opacity: 0.28;
+    }
+    .shop {
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 800;
+      font-size: 34px;
+      letter-spacing: 0.08em;
+      text-align: center;
+      margin-top: 10px;
+    }
+    .tiny {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 13px;
+      text-align: center;
+      color: #5a4630;
+      margin-top: 4px;
+    }
+    .rule { border: none; border-top: 1px dashed #7a6238; margin: 16px 0; }
+    .ln {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 18px;
+      line-height: 1.55;
+    }
+    .ln b { font-weight: 600; }
+    .money { color: #9f160f; font-weight: 600; }
+    .ok { color: #1f6b32; font-weight: 600; }
+    .stamp {
+      position: absolute;
+      right: 48px;
+      bottom: 70px;
+      width: 168px;
+      height: 168px;
+      border: 6px solid #b91c1c;
+      border-radius: 50%;
+      color: #b91c1c;
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 800;
+      font-size: 28px;
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      transform: rotate(-14deg);
+      opacity: 0;
+    }
+    .stamp.show { opacity: 0.92; }
+    .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 28px; width: 900px; }
+    .card {
+      border: 1px solid #3a332c;
+      background: #1a1612;
+      padding: 18px 18px 16px;
+    }
+    .card .k { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: #ff5a2a; letter-spacing: 0.12em; }
+    .card h3 { font-family: "Barlow Condensed", sans-serif; font-weight: 800; font-size: 36px; text-transform: uppercase; margin-top: 6px; }
+    .card p { font-family: "IBM Plex Sans", sans-serif; color: #b7a894; margin-top: 6px; font-size: 18px; }
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 20px; width: 920px; }
+    .box { background: #1a1612; border: 1px solid #3a332c; padding: 20px; }
+    .box.win { border-color: #ff5a2a; }
+    .box .k { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: #8a7a66; letter-spacing: 0.12em; }
+    .box p { font-family: "IBM Plex Sans", sans-serif; font-size: 22px; line-height: 1.35; margin-top: 10px; color: #f2ece3; }
+    .endshop { font-family: "IBM Plex Mono", monospace; color: #8a7a66; margin-top: 28px; font-size: 18px; }
+  </style>
+</head>
+<body>
+  <div class="desk">
+    <div class="tube"></div>
+
+    <section class="scene on" data-at="0">
+      <div class="board">
+        <p class="led" id="clock">15.08.2026  ·  WARSZAWA</p>
+        <h1>OPERATOR</h1>
+        <p class="sub">Not a chatbot. A company that runs while she trains.</p>
+      </div>
+      <aside class="roll">
+        <p class="shop">ANNA FITNESS</p>
+        <p class="tiny">Mokotów · PT · NIP 525-000-00-00</p>
+        <hr class="rule">
+        <p class="ln">PARAGON FISKALNY</p>
+        <p class="ln">15.08.2026&nbsp;&nbsp;10:45</p>
+        <hr class="rule">
+        <p class="ln">waiting for morning run…</p>
+      </aside>
+    </section>
+
+    <section class="scene" data-at="7">
+      <div class="board">
+        <p class="led">SATURDAY  ·  THE BOOKS</p>
+        <h1>THE HOUR<br>IS ALREADY<br><em>EMPTY.</em></h1>
+        <div class="cards">
+          <div class="card"><p class="k">17:00</p><h3>Filip out</h3><p>80 zł on the floor.</p></div>
+          <div class="card"><p class="k">INVOICE</p><h3>Piotr 70 zł</h3><p>Four days late.</p></div>
+          <div class="card"><p class="k">QUIET</p><h3>Kasia</h3><p>Books every 7. Last seen 13.</p></div>
+          <div class="card"><p class="k">KNEE</p><h3>Wojtek</h3><p>Asked if he should still train.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" data-at="20">
+      <div class="board">
+        <p class="led">ONE BUTTON</p>
+        <h1>RUN MY<br><em>BUSINESS</em></h1>
+        <p class="sub">Observe. Policy. Tools. Write it down. Next.</p>
+      </div>
+      <aside class="roll">
+        <p class="shop">ANNA FITNESS</p>
+        <p class="tiny">operator job  ·  daily review</p>
+        <hr class="rule">
+        <p class="ln">BUSINESS CHECK</p>
+        <p class="ln">4 active · 1 cancelled</p>
+        <p class="ln">1 unpaid · 1 quiet · 1 human</p>
+        <hr class="rule">
+        <p class="ln">policy: auto-book on</p>
+        <p class="ln">human cap: €20</p>
+      </aside>
+    </section>
+
+    <section class="scene" data-at="30">
+      <div class="board">
+        <p class="led">01  ·  THE HOUR</p>
+        <h1>MARTA<br>WANTS IT.</h1>
+        <p class="sub">She trains at 17:00. She replies in under a minute. Operator texts her first.</p>
+      </div>
+      <aside class="roll">
+        <p class="shop">ANNA FITNESS</p>
+        <hr class="rule">
+        <p class="ln">17:00 cancelled — Filip</p>
+        <p class="ln">candidates: 3</p>
+        <p class="ln"><b>pick: Marta Kowalska</b></p>
+        <hr class="rule">
+        <p class="ln">MARTA</p>
+        <p class="ln">“Yep, 17:00 works for me!”</p>
+        <p class="ln ok">intent: ACCEPT</p>
+        <p class="ln">booked 17:00–18:00</p>
+        <p class="ln money">80,00 zł  ·  Stripe link</p>
+        <div class="stamp show">PAID<br>80 ZŁ</div>
+      </aside>
+    </section>
+
+    <section class="scene" data-at="46">
+      <div class="board">
+        <p class="led">02  ·  THE INVOICE</p>
+        <h1>SAME LINK.<br>EVERY CHARGE.</h1>
+        <p class="sub">Piotr gets buy.stripe.com/… Organizers read revenue on a restricted key. Never the secret key.</p>
+      </div>
+      <aside class="roll">
+        <p class="shop">ANNA FITNESS</p>
+        <hr class="rule">
+        <p class="ln">Piotr Nowak</p>
+        <p class="ln">invoice 70,00 zł · 4 days</p>
+        <p class="ln">reminder → same Payment Link</p>
+        <hr class="rule">
+        <p class="ln money">70,00 zł open</p>
+        <p class="ln">rk_  ·  balance+charges read</p>
+        <p class="ln">sk_  ·  not shared</p>
+        <div class="stamp show">DUE<br>70 ZŁ</div>
+      </aside>
+    </section>
+
+    <section class="scene" data-at="60">
+      <div class="board" style="width: 1100px;">
+        <p class="led">03  ·  TERAC  ·  GENERAL POPULATION</p>
+        <h1>ASK PEOPLE.<br>THEN TEXT.</h1>
+        <div class="compare">
+          <div class="box">
+            <p class="k">A  ·  BEFORE</p>
+            <p>It's been a while. I have evening space this week if you want back on the usual rhythm.</p>
+          </div>
+          <div class="box win">
+            <p class="k">B  ·  THEY PICKED THIS</p>
+            <p>Your usual slot is free. 60 minutes, same price. Reply YES and I'll hold it.</p>
+          </div>
+        </div>
+        <p class="sub">Five adults. Three minutes. No specialists. Kasia gets B.</p>
+      </div>
+    </section>
+
+    <section class="scene" data-at="76">
+      <div class="board">
+        <p class="led">03  ·  ALSO THE LIST</p>
+        <h1>KASIA GETS B.<br>THE LEAD GETS<br>SATURDAY.</h1>
+        <p class="sub">Reviews go out to last week's package. Policy still sits on top of every action.</p>
+      </div>
+      <aside class="roll">
+        <p class="shop">ANNA FITNESS</p>
+        <hr class="rule">
+        <p class="ln">Kasia · 13 days quiet</p>
+        <p class="ln">copy: B (Terac)</p>
+        <p class="ln ok">rebooking sent</p>
+        <hr class="rule">
+        <p class="ln">lead → Sat morning hold</p>
+        <p class="ln">2 review asks</p>
+      </aside>
+    </section>
+
+    <section class="scene" data-at="90">
+      <div class="board">
+        <p class="led">04  ·  STOP</p>
+        <h1>62%.<br><em>NOT A GUESS.</em></h1>
+        <p class="sub">Wojtek's knee is medical. Operator will not invent a program. It hires a human.</p>
+      </div>
+      <aside class="roll">
+        <p class="shop">TERAC</p>
+        <p class="tiny">human escalation</p>
+        <hr class="rule">
+        <p class="ln">confidence 62%</p>
+        <p class="ln">sports physiotherapist</p>
+        <p class="ln money">quote $18.00</p>
+        <p class="ln">cap €20 · allowed</p>
+        <p class="ln ok">result received</p>
+        <p class="ln">sent to Wojtek</p>
+        <div class="stamp show">$18<br>OK</div>
+      </aside>
+    </section>
+
+    <section class="scene" data-at="104">
+      <div class="board">
+        <p class="led">TODAY</p>
+        <h1>NOTHING<br>URGENT.</h1>
+        <div class="cards">
+          <div class="card"><p class="k">SESSION</p><h3>80 zł</h3><p>Marta, 17:00.</p></div>
+          <div class="card"><p class="k">INVOICE</p><h3>70 zł</h3><p>Same Stripe link.</p></div>
+          <div class="card"><p class="k">TEXTS</p><h3>7</h3><p>Including expert note.</p></div>
+          <div class="card"><p class="k">ADMIN</p><h3>~46 MIN</h3><p>Anna stays on the floor.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" data-at="113">
+      <div class="board">
+        <p class="led">OPERATOR</p>
+        <h1>YOU RUN<br>THE SERVICE.</h1>
+        <p class="sub">Your operator runs the business.</p>
+        <p class="endshop">TERAC &nbsp;·&nbsp; STRIPE &nbsp;·&nbsp; RENDER<br>github.com/kewinzaq1/operator</p>
+      </div>
+      <aside class="roll">
+        <p class="shop">ANNA FITNESS</p>
+        <hr class="rule">
+        <p class="ln">PARAGON</p>
+        <p class="ln money">odzyskane &nbsp; 150,00 zł</p>
+        <p class="ln">godzina pełna</p>
+        <p class="ln ok">koniec zmiany</p>
+        <hr class="rule">
+        <p class="ln">dziękujemy</p>
+        <div class="stamp show">DOMKNIĘTE</div>
+      </aside>
+    </section>
+  </div>
+  <script>
+    const scenes = [...document.querySelectorAll(".scene")];
+    const clock = document.getElementById("clock");
+    let started = 0;
+    window.startFilm = function startFilm() {
+      started = performance.now();
+      const tick = (now) => {
+        const t = (now - started) / 1000;
+        if (clock) clock.textContent = `15.08.2026  ·  ${String(Math.floor(t / 60)).padStart(2, "0")}:${String(Math.floor(t) % 60).padStart(2, "0")}  ·  WARSZAWA`;
+        let current = scenes[0];
+        for (const scene of scenes) if (t >= Number(scene.dataset.at)) current = scene;
+        for (const scene of scenes) scene.classList.toggle("on", scene === current);
+        if (t < 121) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+    if (new URLSearchParams(location.search).has("auto")) {
+      document.fonts.ready.then(() => window.startFilm());
+    }
+  </script>
+</body>
+</html>

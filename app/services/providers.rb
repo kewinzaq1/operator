@@ -14,7 +14,9 @@ module Providers
   end
 
   def payments
-    if demo_mode? || ENV["STRIPE_SECRET_KEY"].blank?
+    if ENV["STRIPE_PAYMENT_LINK_URL"].present?
+      Payments::PaymentLinkClient.new
+    elsif demo_mode? || ENV["STRIPE_SECRET_KEY"].blank?
       Payments::DemoClient.new
     else
       Payments::StripeClient.new
@@ -22,10 +24,12 @@ module Providers
   end
 
   def humans
-    if demo_mode? || ENV["TERAC_API_KEY"].blank?
+    if ENV["TERAC_API_KEY"].present?
+      Humans::TeracClient.new
+    elsif demo_mode?
       Humans::DemoClient.new
     else
-      Humans::TeracClient.new
+      Humans::DemoClient.new
     end
   end
 
