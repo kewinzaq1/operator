@@ -21,7 +21,10 @@ module Agent
       return payment_reminder(unpaid) if unpaid && !done.include?("payment_reminder")
 
       inactive = snapshot[:customers_needing_attention][:inactive].first
-      return rebooking(inactive) if inactive && !done.include?("rebooking")
+      if inactive && !done.include?("rebooking")
+        return copy_research unless done.include?("copy_research")
+        return rebooking(inactive)
+      end
 
       lead = snapshot[:new_leads].first
       return lead_follow_up(lead) if lead && !done.include?("lead_follow_up")
@@ -35,7 +38,7 @@ module Agent
       end
 
       applied = done.include?("apply_human_result")
-      escalation = @business.human_escalations.where(status: "completed").order(:id).last
+      escalation = expert_escalation
       return apply_human_result(human_from(escalation), escalation) if escalation && !applied && human_from(escalation)
 
       { type: "stop", description: "No useful work remains.", confidence: 100, cost: 0 }
@@ -118,6 +121,20 @@ module Agent
       }
     end
 
+    def copy_research
+      {
+        type: "copy_research",
+        description: [
+          "Before sending Kasia a rebooking text, test two versions with real people.",
+          "",
+          "Launching a Terac General Population study (not specialists).",
+          "The winning copy is what we send."
+        ].join("\n"),
+        confidence: 84,
+        cost: 0
+      }
+    end
+
     def rebooking(customer)
       {
         type: "rebooking",
@@ -184,6 +201,12 @@ module Agent
       return unless escalation
       @business.customers.where.not(open_question: [ nil, "" ]).first ||
         @business.customers.find_by(demo_behavior: "escalate")
+    end
+
+    def expert_escalation
+      @business.human_escalations.where(status: "completed").order(:id).to_a.reverse.find do |escalation|
+        escalation.provenance.to_h["kind"] != "product_research"
+      end
     end
   end
 end

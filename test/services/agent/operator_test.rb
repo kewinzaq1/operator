@@ -16,6 +16,7 @@ class OperatorTest < ActiveSupport::TestCase
     assert_includes types, "contact_replacement"
     assert_includes types, "book_replacement"
     assert_includes types, "payment_reminder"
+    assert_includes types, "copy_research"
     assert_includes types, "rebooking"
     assert_includes types, "human_help"
     assert_includes types, "apply_human_result"
@@ -32,6 +33,13 @@ class OperatorTest < ActiveSupport::TestCase
 
     kasia = @business.customers.find_by(name: "Kasia Lewandowska")
     assert kasia.conversations.joins(:messages).exists?
+    rebooking = Message.outbound.joins(:conversation).where(conversations: { customer_id: kasia.id }).order(:sent_at).last
+    assert_match(/Reply YES|usual slot is free/i, rebooking.body)
+
+    research = run.human_escalations.find { |e| e.provenance.to_h["kind"] == "product_research" }
+    assert research
+    assert_equal "completed", research.status
+    assert_equal Tools::HumanTool::VARIANT_B, research.provenance["after"]
 
     escalation = run.human_escalations.last
     assert_equal "completed", escalation.status

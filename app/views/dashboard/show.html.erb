@@ -34,6 +34,23 @@
 
     <%= render "dashboard/metrics", business: @business, run: @run %>
 
+    <% if @copy_research&.provenance.present? %>
+      <section class="mt-8 border border-pine/30 bg-chalk/80 p-5">
+        <h2 class="text-xs uppercase tracking-[0.22em] text-moss">People made this better</h2>
+        <p class="mt-2 text-sm text-moss">Terac general population copy test — before vs after.</p>
+        <div class="mt-4 grid gap-4 md:grid-cols-2">
+          <article class="border border-rule p-4">
+            <p class="text-[10px] uppercase tracking-[0.2em] text-moss">Before</p>
+            <p class="mt-2 text-sm"><%= @copy_research.provenance["before"] %></p>
+          </article>
+          <article class="border border-pine/40 bg-paper/60 p-4">
+            <p class="text-[10px] uppercase tracking-[0.2em] text-pine">After</p>
+            <p class="mt-2 text-sm"><%= @copy_research.provenance["after"] || "Study in flight" %></p>
+          </article>
+        </div>
+      </section>
+    <% end %>
+
     <div class="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(320px,420px)]">
       <section class="border border-rule bg-chalk/80 p-5">
         <div class="flex items-baseline justify-between">

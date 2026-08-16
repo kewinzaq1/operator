@@ -82,6 +82,8 @@ module Agent
         book_replacement(decision, action)
       when "payment_reminder"
         payment_reminder(decision, action)
+      when "copy_research"
+        copy_research(decision, action)
       when "rebooking"
         rebooking(decision, action)
       when "lead_follow_up"
@@ -161,11 +163,31 @@ module Agent
       { ok: true, extra: "\n\n✓ reminder sent", minutes: 5 }
     end
 
+    def copy_research(decision, action)
+      escalation = @humans.research_copy!(agent_run: @run)
+      action.update!(cost: escalation.quoted_cost)
+      if escalation.status != "completed"
+        return { ok: true, extra: "\n\nTerac copy test quoted above policy. Using the original rebooking copy.", minutes: 1 }
+      end
+      {
+        ok: true,
+        extra: [
+          "",
+          "TERAC · general population",
+          "Before: #{escalation.provenance['before']}",
+          "After:  #{escalation.provenance['after']}",
+          "People picked: #{escalation.result.to_s.truncate(160)}"
+        ].join("\n"),
+        minutes: 3
+      }
+    end
+
     def rebooking(decision, action)
       customer = decision[:customer]
+      copy = winning_rebooking_copy
       @messaging.send_message(
         customer: customer,
-        body: "#{greeting}, #{customer.name.split.first} — it's been #{customer.days_since_visit} days since your last session. I have evening space this week if you want back on the usual rhythm.",
+        body: "#{greeting}, #{customer.name.split.first} — #{copy}",
         agent_action: action
       )
       @run.increment!(:messages_sent)
@@ -303,6 +325,13 @@ module Agent
         summary: summary
       )
       @band.publish("Decision completed. Owner has nothing urgent to do.")
+    end
+
+    def winning_rebooking_copy
+      research = @business.human_escalations.order(:id).to_a.reverse.find do |escalation|
+        escalation.provenance.to_h["kind"] == "product_research" && escalation.status == "completed"
+      end
+      research&.provenance&.dig("after").presence || Tools::HumanTool::VARIANT_A
     end
 
     def greeting

@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   get "dashboard", to: "dashboard#show"
   post "agent_runs", to: "agent_runs#create"
   post "demo/reset", to: "demo#reset", as: :demo_reset
+  post "internal/runs", to: "internal/runs#create"
   patch "approvals/:id", to: "approvals#update", as: :approval
 
   get "payments/success", to: "payments#success"

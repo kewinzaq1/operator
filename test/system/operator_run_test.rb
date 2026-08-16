@@ -20,6 +20,7 @@ class OperatorRunTest < ApplicationSystemTestCase
     assert_text "ACCEPT"
     assert_text "Payment request sent"
     assert_text "unpaid"
+    assert_text "general population"
     assert_text "rebooking"
     assert_text "Terac"
     assert_text "TODAY'S IMPACT"
